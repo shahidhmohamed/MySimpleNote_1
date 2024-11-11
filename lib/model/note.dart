@@ -18,4 +18,12 @@ class Note {
     mapping['book_marked'] = book_marked == true ? 1 : 0;
     return mapping;
   }
+
+  Note({
+    this.note_id,
+    this.title,
+    this.content,
+    this.created_at,
+    this.book_marked,
+  });
 }

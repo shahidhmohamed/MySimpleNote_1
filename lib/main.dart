@@ -47,6 +47,48 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
+  Future<void> _initializeDummyData() async {
+    var notes = await _noteService.readAllNotes();
+
+    // Only add dummy data if there are no notes
+    if (notes.isEmpty) {
+      List<Note> dummyNotes = [
+        Note(
+          title: "Project Overview",
+          content:
+              "This is a test note to summarize the main points of an upcoming project.The project involves multiple stages, including research, development, and testing. Each team member will be assigned specific tasks, and regular updates are expected. This note helps ensure that all relevant details are stored clearly for reference.",
+          created_at: DateTime.now(),
+          book_marked: false,
+        ),
+        Note(
+          title: "Workout Plan",
+          content:
+              "This is a test note outlining a basic workout plan. The plan includes cardio exercises three times a week, strength training twice a week, and flexibility exercises once a week. Each session is aimed at enhancing overall fitness and health. The app should be able to handle and display this structured content efficiently.",
+          created_at: DateTime.now(),
+          book_marked: true,
+        ),
+        Note(
+          title: "Book Summary - Atomic Habits",
+          content:
+              "This is a test note summarizing key points from by James Clear. The book explores how small habits, when built over time, can lead to significant positive changes. The author emphasizes creating systems instead of relying on motivation alone. This note tests how the app handles book summaries and longer texts.",
+          created_at: DateTime.now(),
+          book_marked: false,
+        ),
+        Note(
+          title: "Workout Routine",
+          content: "Monday: Chest, Tuesday: Back, Wednesday: Legs",
+          created_at: DateTime.now(),
+          book_marked: false,
+        ),
+      ];
+
+      for (var note in dummyNotes) {
+        await _noteService.saveNote(note);
+      }
+      getAllNotes();
+    }
+  }
+
   getAllNotes() async {
     var notes = await _noteService.readAllNotes();
     _noteList = <Note>[];
@@ -60,7 +102,8 @@ class _MyHomePageState extends State<MyHomePage> {
       notesModel.book_marked = notesData['book_marked'] == 1;
       _noteList.add(notesModel);
       _noteList.sort((a, b) {
-        return (b.book_marked == true ? 1 : 0) - (a.book_marked == true ? 1 : 0);
+        return (b.book_marked == true ? 1 : 0) -
+            (a.book_marked == true ? 1 : 0);
       });
     });
 
@@ -70,7 +113,9 @@ class _MyHomePageState extends State<MyHomePage> {
   void _filterNotes() {
     setState(() {
       _filteredNoteList = _noteList.where((note) {
-        return note.title!.toLowerCase().contains(_searchController.text.toLowerCase());
+        return note.title!
+            .toLowerCase()
+            .contains(_searchController.text.toLowerCase());
       }).toList();
     });
   }
@@ -87,8 +132,7 @@ class _MyHomePageState extends State<MyHomePage> {
           actions: [
             TextButton(
               style: TextButton.styleFrom(
-                  foregroundColor: Colors.white,
-                  backgroundColor: Colors.red),
+                  foregroundColor: Colors.white, backgroundColor: Colors.red),
               onPressed: () async {
                 var result = await _noteService.deleteNote(noteId);
                 Navigator.pop(context);
@@ -101,8 +145,7 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             TextButton(
               style: TextButton.styleFrom(
-                  foregroundColor: Colors.white,
-                  backgroundColor: Colors.teal),
+                  foregroundColor: Colors.white, backgroundColor: Colors.teal),
               onPressed: () {
                 Navigator.pop(context);
               },
@@ -117,6 +160,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
+    _initializeDummyData();
     getAllNotes();
     _searchController.addListener(_filterNotes);
   }
@@ -130,7 +174,8 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
-    double cardWidth = screenWidth - 40; // Assuming you want to subtract 20 padding on both sides
+    double cardWidth = screenWidth -
+        40; // Assuming you want to subtract 20 padding on both sides
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -179,7 +224,8 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
                 const SizedBox(height: 20),
                 SizedBox(
-                  width: cardWidth, // Set the width of the search bar to match the card width
+                  width:
+                      cardWidth, // Set the width of the search bar to match the card width
                   child: TextField(
                     controller: _searchController,
                     decoration: InputDecoration(
@@ -200,13 +246,15 @@ class _MyHomePageState extends State<MyHomePage> {
               itemCount: _filteredNoteList.length,
               itemBuilder: (context, index) {
                 return Padding(
-                  padding: const EdgeInsets.only(left: 20, bottom: 0, right: 20, top: 10),
+                  padding: const EdgeInsets.only(
+                      left: 20, bottom: 0, right: 20, top: 10),
                   child: GestureDetector(
                     onTap: () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => ViewNote(note: _filteredNoteList[index]),
+                          builder: (context) =>
+                              ViewNote(note: _filteredNoteList[index]),
                         ),
                       ).then((data) {
                         if (data != null) {
@@ -231,7 +279,8 @@ class _MyHomePageState extends State<MyHomePage> {
                               children: [
                                 Text(
                                   _filteredNoteList[index].created_at != null
-                                      ? DateFormat('d MMM').format(_filteredNoteList[index].created_at!)
+                                      ? DateFormat('d MMM').format(
+                                          _filteredNoteList[index].created_at!)
                                       : 'No Date',
                                   style: TextStyle(
                                       fontSize: 13,
@@ -244,15 +293,18 @@ class _MyHomePageState extends State<MyHomePage> {
                                     _filteredNoteList[index].book_marked == true
                                         ? Icons.bookmark
                                         : Icons.bookmark_border,
-                                    color: _filteredNoteList[index].book_marked == true
-                                        ? Colors.yellow
-                                        : Colors.grey,
+                                    color:
+                                        _filteredNoteList[index].book_marked ==
+                                                true
+                                            ? Colors.yellow
+                                            : Colors.grey,
                                   ),
                                   onPressed: () async {
                                     setState(() {
                                       _filteredNoteList[index].toggleBookmark();
                                     });
-                                    await _noteService.updateBookmarkStatus(_filteredNoteList[index]);
+                                    await _noteService.updateBookmarkStatus(
+                                        _filteredNoteList[index]);
                                     await getAllNotes();
                                   },
                                 ),
@@ -284,7 +336,8 @@ class _MyHomePageState extends State<MyHomePage> {
                               children: [
                                 IconButton(
                                   onPressed: () {
-                                    _deleteNoteDialog(context, _filteredNoteList[index].note_id);
+                                    _deleteNoteDialog(context,
+                                        _filteredNoteList[index].note_id);
                                   },
                                   icon: const Icon(
                                     Icons.delete,
@@ -327,9 +380,14 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: <Widget>[
-            IconButton(onPressed: () {
-              Navigator.push(context, MaterialPageRoute(builder: (context)=> const Notetypes()));
-            }, icon: const Icon(Icons.menu)),
+            IconButton(
+                onPressed: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const Notetypes()));
+                },
+                icon: const Icon(Icons.menu)),
           ],
         ),
       ),
